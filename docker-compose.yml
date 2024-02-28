@@ -1,0 +1,39 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb:1.8
+    volumes:
+      - influxdb:/var/lib/influxdb
+    ports:
+      - '8086:8086'
+
+  telegraf:
+    image: telegraf:latest
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - influxdb
+
+  chronograf:
+    image: chronograf:1.8
+    volumes:
+      - chronograf:/var/lib/chronograf
+    ports:
+      - '8888:8888'
+    depends_on:
+      - influxdb
+
+  kapacitor:
+    image: kapacitor:1.5
+    volumes:
+      - kapacitor:/var/lib/kapacitor
+    depends_on:
+      - influxdb
+    environment:
+       - KAPACITOR_INFLUXDB_0_URLS_0=http://influxdb:8086
+
+volumes:
+  influxdb:
+  kapacitor:
+  chronograf:
